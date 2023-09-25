@@ -1,4 +1,4 @@
-﻿class AResponse
+class AResponse
 {
     [string]$Value
     [bool]$IsSuccessful
@@ -28,30 +28,22 @@ class ArcherAPI {
         try
         {
             $requestURL = $this.baseURL+'/platformapi/core/security/login'
-            #$headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-            $headers = @{
-                "Content-Type" ="application/json"
-                }
+            $headers = @{"Content-Type" ="application/json"}
 
             $body = @{
                 "InstanceName" = $instanceName
                 "Username" = $userName
                 "UserDomain" = $userDomain
                 "Password" = $password
-            } | ConvertTo-Json
-
-            #$body = $body | ConvertTo-Json
+                } | ConvertTo-Json
             $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $body
-            if($this.response.IsSuccessful -eq $True)
-            {
-                $this.sessionToken = $this.response.RequestedObject.SessionToken
-                $okResult = [AResponse]::new($this.sessionToken,$this.response.IsSuccessful,'',$this.response)
-                return $okResult
-            }
-            else
+            if($this.response.IsSuccessful -eq $False)
             {
                 throw $this.response.ValidationMessages.MessageKey
             }
+            $this.sessionToken = $this.response.RequestedObject.SessionToken
+            $okResult = [AResponse]::new($this.sessionToken,$this.response.IsSuccessful,'',$this.response)
+            return $okResult
         }
         catch
         {
@@ -60,29 +52,25 @@ class ArcherAPI {
         }
     }
 
-    [AResponse] Logout([string]$sessionToken)
+    [AResponse] Logout()
     {
         try
         {
             $requestURL = $this.baseURL+'/platformapi/core/security/logout'
-            $headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
-            $headers.Add("Content-Type", "application/json")
-
+            $headers = @{
+                "Content-Type" ="application/json"
+                "Authorization" = "Archer session-id=`""+$this.sessionToken+"`""
+            }
             $body = @{
-                "Value" = $sessionToken
-            }
-
-            $body = $body | ConvertTo-Json
+                "Value" = $this.sessionToken
+                } | ConvertTo-Json
             $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $body
-            if($this.response.IsSuccessful -eq $True)
-            {
-                $okResult = [AResponse]::new('KO',$this.response.IsSuccessful,'',$this.response)
-                return $okResult
-            }
-            else
+            if($this.response.IsSuccessful -eq $False)
             {
                 throw $this.response.ValidationMessages.MessageKey
             }
+            $okResult = [AResponse]::new('KO',$this.response.IsSuccessful,'',$this.response)
+            return $okResult
         }
         catch
         {
@@ -98,23 +86,16 @@ Clear-Host
 $archerAPI = [ArcherAPI]::new('http://192.168.44.10/Archer')
 $loginResponse = $archerAPI.Login( 'webapi', 'Archer@123', 'oda','')
 
-if($loginResponse.IsSuccessful -eq $True)
+if ($loginResponse.IsSuccessful -eq $False)
 {
-    $sessionToken = $archerAPI.sessionToken
+    throw 'Authentication Unsuccessful' -$loginResponse.Exception
+}
+$sessionToken = $archerAPI.sessionToken
     Write-Output 'Authentication Successful' $sessionToken ''
-}
-elseif ($loginResponse.IsSuccessful -eq $False)
-{
-    Write-Output 'Authentication Unsuccessful' $loginResponse.Exception
-}
 
-$logoutResponse = $archerAPI.Logout($sessionToken);
-
-if($logoutResponse.IsSuccessful -eq $True)
+$logoutResponse = $archerAPI.Logout();
+if ($logoutResponse.IsSuccessful -eq $False)
 {
-    Write-Output 'KO'
+    throw 'Unable to KO' -$logoutResponse.Value -$logoutResponse.Exception -$logoutResponse.IsSuccessful -$logoutResponse.Response
 }
-elseif ($logoutResponse.IsSuccessful -eq $False)
-{
-    Write-Output 'Unable to KO' $logoutResponse.Value $logoutResponse.Exception $logoutResponse.IsSuccessful $logoutResponse.Response
-}
+Write-Output 'KO'
