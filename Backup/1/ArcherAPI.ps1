@@ -1,4 +1,4 @@
-﻿﻿#Import-Module .\ArcherContent.ps1
+﻿#Import-Module .\ArcherContent.ps1
 class AResponse {
     [string]$Value
     [bool]$IsSuccessful
