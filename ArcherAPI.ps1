@@ -46,17 +46,6 @@ class ArcherAPI {
         }
     }
 
-    [AResponse] Login2([string]$userName, [string]$password, [string]$instanceName, $userDomain ) {
-        try {
-            $okResult = [AResponse]::new($userName, $password, '', $instanceName)
-            return $okResult
-        }
-        catch {
-            $okResult = [AResponse]::new($userName, $password, '', $instanceName)
-            return $okResult
-        }
-    }
-
     [AResponse] Logout() {
         try {
             $requestURL = $this.baseURL + '/platformapi/core/security/logout'

@@ -1,16 +1,77 @@
-class ArcherContent {
-    [string] $inputS
-    ArcherContent([string] $inputS) {
-        $this.inputS = $inputS
+Import-Module .\ArcherAPI.ps1
+class AResponse {
+    [object]$Value
+    [bool]$IsSuccessful
+    [object]$Exception
+    [object]$Response
+
+    AResponse($Value, $IsSuccessful, $Exception, $Response) {
+        $this.Value = $Value
+        $this.IsSuccessful = $IsSuccessful
+        $this.Exception = $Exception
+        $this.Response = $Response
     }
-    
-    [string] Test() {
-        return $this.inputS
+}
+
+class ArcherContent {
+    $response = $null
+    $sessionToken = $null
+    $baseURL = $null
+    ArcherContent([string] $baseURL ,[string] $sessionToken)
+    {
+        $this.sessionToken = $sessionToken
+        $this.baseURL = $baseURL
+    }
+    [AResponse] Record_Create([string]$requestJSON) {
+        try {
+            $requestURL = $this.baseURL + '/platformapi/core/content'
+            $headers = @{
+                "Content-Type"  = "application/json"
+                "Authorization" = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__"= $this.sessionToken
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $requestJSON
+            if ($this.response.IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $recordID = $this.response.RequestedObject.Id
+            $okResult = [AResponse]::new($recordID, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+
+    [AResponse] Record_Get([int]$ContentID) {
+        try {
+            $requestURL = $this.baseURL + '/platformapi/core/content/contentid?id=' + $ContentID
+            $headers = @{
+                "Content-Type"  = "application/json"
+                "Authorization" = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__"= $this.sessionToken
+                "X-Http-Method-Override" = "GET"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
+            if ($this.response.IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $record = $this.response.RequestedObject
+            $okResult = [AResponse]::new($record, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
     }
 }
 
 class RequestJSON {
-    [string] $requestJSON = ''
+    [string] $requestJSON = $null
     [bool] $FieldsDataAdded = $false
     [System.Collections.Generic.List[string]] $FieldContentRequestJSON = @()
 
@@ -23,7 +84,7 @@ class RequestJSON {
             # $this.FieldsDataAdded = $True
             if ($FieldType -eq 1 -or $FieldType -eq 2 -or $FieldType -eq 3) 
             {
-                $var = '' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": "' + $FieldData + '","FieldId": ' + $Fieldid + '}'
+                $var = '"' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": "' + $FieldData + '","FieldId": ' + $Fieldid + '}'
                 $this.FieldContentRequestJSON.Add($var)
             }
             elseif ($FieldType -eq 9) {
@@ -31,13 +92,13 @@ class RequestJSON {
                 [System.Collections.Generic.List[string]] $tempVar = @()
                 $tempVar = $RecordIdsList | ForEach-Object { '{ "ContentId": ' + $_ + '}' }
                 $RecordString = $tempVar -join ','
-                $this.FieldContentRequestJSON.Add('' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": [' + $RecordString + '],"FieldId": ' + $Fieldid + '}')
+                $this.FieldContentRequestJSON.Add('"' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": [' + $RecordString + '],"FieldId": ' + $Fieldid + '}')
             }
             elseif ($FieldType -eq 11 -or $FieldType -eq 12 -or $FieldType -eq 16 -or $FieldType -eq 23 -or $FieldType -eq 24 -or $FieldType -eq 7) {
-                $this.FieldContentRequestJSON.Add('' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": [' + $FieldData + '],"FieldId": ' + $Fieldid + '}')
+                $this.FieldContentRequestJSON.Add('"' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": [' + $FieldData + '],"FieldId": ' + $Fieldid + '}')
             }
             elseif ($FieldType -eq 4) {
-                $this.FieldContentRequestJSON.Add('' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": {"ValuesListIds": [' + $FieldData + ']},"FieldId": ' + $Fieldid + '}')
+                $this.FieldContentRequestJSON.Add('"' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": {"ValuesListIds": [' + $FieldData + ']},"FieldId": ' + $Fieldid + '}')
             }
             elseif ($FieldType -eq 8) {
                 $tempList = $FieldData.Split(';')
@@ -59,11 +120,10 @@ class RequestJSON {
                 else {
                     $GroupString = '""GroupList": []'
                 }
-                $this.FieldContentRequestJSON.Add('' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": {' + $UsersString + $GroupString + '},"FieldId": ' + $Fieldid + '}')
-                #$this.FieldContentRequestJSON.Add(""$Fieldid": {"Type": $FieldType,"Value": {$UsersString, $GroupString},"FieldId": $Fieldid}")
+                $this.FieldContentRequestJSON.Add('"' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": {' + $UsersString + $GroupString + '},"FieldId": ' + $Fieldid + '}')
             }
             elseif ($FieldType -eq 19) {
-                $this.FieldContentRequestJSON.Add('' + $Fieldid + '": {"Type": ' + $FieldType + ',"IpAddressBytes": "' + $FieldData + '","FieldId": ' + $Fieldid + '}')
+                $this.FieldContentRequestJSON.Add('"' + $Fieldid + '": {"Type": ' + $FieldType + ',"IpAddressBytes": "' + $FieldData + '","FieldId": ' + $Fieldid + '}')
             }
 
             Write-Host $this.FieldContentRequestJSON
@@ -79,22 +139,36 @@ class RequestJSON {
         }
         else {
             if ($ContentId -gt 0) {
-                $this.requestJSON = '{"Content":{"Id": ' + $ContentId + ',"LevelId": ' + $LevelId + ',"FieldContents": {"' + ($this.FieldContentRequestJSON -join ",") + '}}}'
+                $this.requestJSON = '{"Content":{"Id": ' + $ContentId + ',"LevelId": ' + $LevelId + ',"FieldContents": {' + ($this.FieldContentRequestJSON -join ",") + '}}}'
             }
             else {
-                $this.requestJSON = '{"Content":{"LevelId": ' + $LevelId + ',"FieldContents": {"' + ($this.FieldContentRequestJSON -join ",") + '}}}'
+                $this.requestJSON = '{"Content":{"LevelId": ' + $LevelId + ',"FieldContents": {' + ($this.FieldContentRequestJSON -join ",") + '}}}'
             }
         }    
         return $this.requestJSON
     }
-    
 }
 
+$archerAPI = [ArcherAPI]::new('http://192.168.44.10/Archer')
+$loginResponse = $archerAPI.Login( 'webapi', 'Archer@123', 'oda','')
+if($loginResponse.IsSuccessful -eq $False)
+{
+    throw 'Authentication Unsuccessful'+ $loginResponse.Exception
+}
+$sessionToken = $archerAPI.sessionToken
+    Write-Output 'Authentication Successful' + $sessionToken
+
 $rJSON = [RequestJSON]::new($True)
-$rJSON.AddFieldData( 567 , 1 , 'Hello' )
-$reqJSON = $rJSON.Create(5,0)
+$rJSON.AddFieldData( 2974 , 1 , 'API Test Company' )
+$rJSON.AddFieldData( 2973 , 1 , 'API Test Company' )
+$reqJSON = $rJSON.Create(34,0)
 Write-Host $reqJSON
 
-$var1 = $reqJSON | ConvertFrom-Json
+$archerContent = [ArcherContent]::new('http://192.168.44.10/Archer',$sessionToken)
+Clear-Host
+$record = $archerContent.Record_Get(205555).Value
+write-Host $record | ConvertTo-Json
+
+$archerContent.CreateRecord($reqJSON)
 
 Write-Host 'End'
