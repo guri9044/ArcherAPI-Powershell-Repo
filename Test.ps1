@@ -1,37 +1,34 @@
 Import-Module .\ArcherAPI.ps1
 Import-Module .\ArcherContent.ps1
+Import-Module .\ArcherSearch.ps1
 
 Clear-Host
 
 $archerAPI = [ArcherAPI]::new('http://192.168.44.10/Archer')
 $loginResponse = $archerAPI.Login( 'webapi', 'Archer@123', 'oda','')
-
-
-$reqJSON = [RequestJSON]::new
-$tVar1 = $reqJSON.AddFieldData()
-Write-Host $tVar1
-
-
-<#
-
-if($loginResponse.IsSuccessful -eq $True)
+if($loginResponse.IsSuccessful -eq $False)
 {
-    $sessionToken = $archerAPI.sessionToken
-    Write-Output 'Authentication Successful' $sessionToken ''
+    throw 'Authentication Unsuccessful'+ $loginResponse.Exception
 }
-else
-{
-    Write-Output 'Authentication Unsuccessful' $loginResponse.Exception
-}
+$sessionToken = $archerAPI.sessionToken
 
-$logoutResponse = $archerAPI.Logout();
+#$archerContent = [ArcherContent]::new('http://192.168.44.10/Archer',$sessionToken)
+<#Clear-Host
+#get record
+$record = $archerContent.Record_Get(205555).Value
+$record | ConvertTo-Json #>
 
-if($logoutResponse.IsSuccessful -eq $True)
-{
-    Write-Output $logoutResponse.Value
-}
-else
-{
-    Write-Output 'Unable to KO' $logoutResponse.Value $logoutResponse.Exception $logoutResponse.IsSuccessful $logoutResponse.Response
-}
-#>
+<#Clear-Host
+#create record - create request json first, then pass request json to Record_Create method
+$rJSON = [RequestJSON]::new($True)
+$rJSON.AddFieldData( 2974 , 1 , 'API Test Company' )
+$rJSON.AddFieldData( 2973 , 1 , 'API Test Company' )
+$rJSON.AddFieldData( 2972 , 1 , 'API Test Company' )
+$reqJSON = $rJSON.Create(34,0)
+Write-Host $reqJSON
+$recordID  = $archerContent.Record_Create($reqJSON).Value #>
+
+$aO = [ArcherSearch]::new('http://192.168.44.10/Archer',$sessionToken)
+$aO.SearchRecordsByReport(13794,1)
+
+Write-Host 'End'

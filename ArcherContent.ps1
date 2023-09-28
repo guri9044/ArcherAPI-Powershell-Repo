@@ -1,4 +1,3 @@
-Import-Module .\ArcherAPI.ps1
 class AResponse {
     [object]$Value
     [bool]$IsSuccessful
@@ -17,8 +16,7 @@ class ArcherContent {
     $response = $null
     $sessionToken = $null
     $baseURL = $null
-    ArcherContent([string] $baseURL ,[string] $sessionToken)
-    {
+    ArcherContent([string] $baseURL , [string] $sessionToken) {
         $this.sessionToken = $sessionToken
         $this.baseURL = $baseURL
     }
@@ -26,9 +24,9 @@ class ArcherContent {
         try {
             $requestURL = $this.baseURL + '/platformapi/core/content'
             $headers = @{
-                "Content-Type"  = "application/json"
-                "Authorization" = "Archer session-id=`"" + $this.sessionToken + "`""
-                "__ArcherSessionCookie__"= $this.sessionToken
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
             }
 
             $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $requestJSON
@@ -49,10 +47,10 @@ class ArcherContent {
         try {
             $requestURL = $this.baseURL + '/platformapi/core/content/contentid?id=' + $ContentID
             $headers = @{
-                "Content-Type"  = "application/json"
-                "Authorization" = "Archer session-id=`"" + $this.sessionToken + "`""
-                "__ArcherSessionCookie__"= $this.sessionToken
-                "X-Http-Method-Override" = "GET"
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "GET"
             }
 
             $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
@@ -82,8 +80,7 @@ class RequestJSON {
     [void] AddFieldData([int] $Fieldid, [int] $FieldType, [string] $FieldData) {
         try {
             # $this.FieldsDataAdded = $True
-            if ($FieldType -eq 1 -or $FieldType -eq 2 -or $FieldType -eq 3) 
-            {
+            if ($FieldType -eq 1 -or $FieldType -eq 2 -or $FieldType -eq 3) {
                 $var = '"' + $Fieldid + '": {"Type": ' + $FieldType + ',"Value": "' + $FieldData + '","FieldId": ' + $Fieldid + '}'
                 $this.FieldContentRequestJSON.Add($var)
             }
@@ -148,27 +145,3 @@ class RequestJSON {
         return $this.requestJSON
     }
 }
-
-$archerAPI = [ArcherAPI]::new('http://192.168.44.10/Archer')
-$loginResponse = $archerAPI.Login( 'webapi', 'Archer@123', 'oda','')
-if($loginResponse.IsSuccessful -eq $False)
-{
-    throw 'Authentication Unsuccessful'+ $loginResponse.Exception
-}
-$sessionToken = $archerAPI.sessionToken
-    Write-Output 'Authentication Successful' + $sessionToken
-
-$rJSON = [RequestJSON]::new($True)
-$rJSON.AddFieldData( 2974 , 1 , 'API Test Company' )
-$rJSON.AddFieldData( 2973 , 1 , 'API Test Company' )
-$reqJSON = $rJSON.Create(34,0)
-Write-Host $reqJSON
-
-$archerContent = [ArcherContent]::new('http://192.168.44.10/Archer',$sessionToken)
-Clear-Host
-$record = $archerContent.Record_Get(205555).Value
-write-Host $record | ConvertTo-Json
-
-$archerContent.CreateRecord($reqJSON)
-
-Write-Host 'End'

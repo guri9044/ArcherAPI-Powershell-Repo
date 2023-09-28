@@ -1,5 +1,4 @@
-﻿﻿#Import-Module .\ArcherContent.ps1
-class AResponse {
+﻿﻿class AResponse {
     [string]$Value
     [bool]$IsSuccessful
     [object]$Exception
