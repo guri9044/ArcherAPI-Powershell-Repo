@@ -60,7 +60,9 @@ class FieldDefinitions {
 
 class RecordData {
     [int] $id
+    [int] $levelId
     $data = @()
+    $relationship = @()
 }
 
 class FieldData {
@@ -89,9 +91,9 @@ function PrivateExtractRecordsfromXML($inputRawXML) {
     }
 
     $recordsArray = $xmlObject.Records.Record
-    $recordJSON = PrivateDataConvertfromXML($recordsArray, $FieldDefinitionsList)
-
-    return $recordJSON | ConvertTo-Json
+    $recordObject = PrivateDataConvertfromXML($recordsArray, $FieldDefinitionsList)
+    $recordJSON = $recordObject | ConvertTo-Json -Depth 100
+    return $recordJSON
     Clear-Host
 }
 
@@ -121,6 +123,7 @@ function PrivateDataConvertfromXML($inputXML) {
         $FieldData = @()
         $rec = [RecordData]::new() 
         $recordIDVal = $record.Attributes["contentId"].Value
+        $recordLevelId = $record.Attributes["levelId"].Value
         $fieldNodes = $record.Field
         foreach ($field in $fieldNodes) {
             $fieldIDVal = $field.Attributes['id'].Value
@@ -181,8 +184,16 @@ function PrivateDataConvertfromXML($inputXML) {
 
         $rec.Data += $FieldData
         $rec.Id = $recordIDVal
+        $rec.levelId = $recordLevelId
+        $childData        
+
+        $childRecNodes = $record.record
+        if (-not($childRecNodes.count -eq 0)) {
+            $childData = PrivateDataConvertfromXML($childRecNodes, $fieldDef)
+        }
+        $rec.relationship = $childData
         $recData += $rec
     }
-    $recJSON = $recData | ConvertTo-Json -Depth 100
-    return $recJSON
+    #$recJSON = $recData | ConvertTo-Json -Depth 100
+    return $recData
 }
