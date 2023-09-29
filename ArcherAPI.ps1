@@ -67,4 +67,24 @@ class ArcherAPI {
             return $failResult
         }
     }
+
+    [void] LogInfo ([string] $logMessage) {
+        if (-NOT(Test-Path -Path $this.logFilePath -PathType Container)) {
+            New-Item -Path $this.logFilePath -ItemType Directory
+            Write-Host 'Log folder created'
+        }        
+        $formattedTimestamp = Get-Date -Format "yyyy.MM.dd.HH.mm.ss"
+        $this.fullFileName = $this.logFilePath + $this.logFileName + $formattedTimestamp + '.txt'
+        Add-Content $this.fullFileName -Value '[INFO] ' + $logMessage
+    }
+
+    [void] LogError ([string] $logMessage) {
+        if (-NOT(Test-Path -Path $this.logFilePath -PathType Container)) {
+            New-Item -Path $this.logFilePath -ItemType Directory
+            Write-Host 'Log folder created'
+        } 
+        $formattedTimestamp = Get-Date -Format "yyyy.MM.dd.HH.mm.ss"
+        $this.fullFileName = $this.logFilePath + $this.logFileName + $formattedTimestamp + '.txt'
+        Add-Content $this.fullFileName -Value '[ERROR] ' + $logMessage
+    }
 }
