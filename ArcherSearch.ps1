@@ -35,9 +35,6 @@ class ArcherSearch {
             $xmlResponse = [XML]$this.response
             $responseResult = $xmlResponse.Envelope.Body.SearchRecordsByReportResponse.SearchRecordsByReportResult
             $var1 = PrivateExtractRecordsfromXML($responseResult)
-
-
-
             $okResult = [AResponse]::new($var1, $True, '', $this.response)
             return $okResult
         }
@@ -49,31 +46,143 @@ class ArcherSearch {
 }
 
 class FieldDefinitions {
-    [int]$id = $null
-    [GUID]$guid = $null
-    [string]$name = $null
-    [string]$alias = $null
-    FieldDefinitions([int]$id, [GUID]$guid, [string]$name, [string]$alias) {
+    [int]$id
+    [string]$guid
+    [string]$name
+    [string]$alias
+    <#FieldDefinitions([int]$id, [GUID]$guid, [string]$name, [string]$alias) {
         $this.id = $id
         $this.alias = $alias
         $this.guid = $guid
         $this.name = $name
-    }
+    }#>
 }
 
-function PrivateExtractRecordsfromXML([string] $inputXML) {
-    $xmlObject = [XML]$inputXML
-    $blankJsonObject = @{}
-    $jsonData = $blankJsonObject | ConvertTo-Json
-    $countOfRecords = $xmlObject.Records.Attributes["count"].Value
-    $FieldDefinitions = New-Object Collections.Generic.List[FieldDefinitions]
-    
-    $FieldDefinitions = $xmlObject.Records.Metadata.FieldDefinitions
+class RecordData {
+    [int] $id
+    $data = @()
+}
 
-    return $IDList
+class FieldData {
+    [int]$id
+    [string]$guid
+    [string]$name
+    [string]$alias
+    $value = @()
+    [int] $type
+}
+
+function PrivateExtractRecordsfromXML($inputRawXML) {
+    $xmlObject = [XML]$inputRawXML
+    $FieldDefinitionsList = @()
+    
+    $FieldDefinitionsArray = $xmlObject.Records.Metadata.FieldDefinitions.FieldDefinition
+    foreach ($FieldDefinitionItem in $FieldDefinitionsArray) {
+        $FieldDefinition = $FieldDefinitionItem
+        $FieldDefinitionsList += [FieldDefinitions]@{
+            "id"    = $FieldDefinition.Attributes['id'].Value
+            "guid"  = $FieldDefinition.Attributes['guid'].Value
+            "name"  = $FieldDefinition.Attributes['name'].Value
+            "alias" = $FieldDefinition.Attributes['alias'].Value
+        }
+        #$FieldDefinitionsList += [FieldDefinitions]::new($obj1.id, $obj1.guid, $obj1.name, $obj1.alias)
+    }
+
+    $recordsArray = $xmlObject.Records.Record
+    $recordJSON = PrivateDataConvertfromXML($recordsArray, $FieldDefinitionsList)
+
+    return $recordJSON | ConvertTo-Json
     Clear-Host
 }
 
-function PrivateConvertfromXML([string] $inputXML) {
+<#
+Text = 1,
+Numeric = 2,
+Date = 3,
+ValuesList = 4,
+ExternalLinks = 7,
+RecordPermissions = 8,
+CrossReference = 9,
+Attachment = 11,
+Image = 12,
+Matrix = 16,
+IPAddress = 19,
+RelatedRecords = 23,
+Subform = 24
+#>
 
+function PrivateDataConvertfromXML($inputXML) {
+    $data = $inputXML[0]
+    $fieldDef = $inputXML[1]
+    
+    $recData = @()
+    
+    foreach ($record in $data) {
+        $FieldData = @()
+        $rec = [RecordData]::new() 
+        $recordIDVal = $record.Attributes["contentId"].Value
+        $fieldNodes = $record.Field
+        foreach ($field in $fieldNodes) {
+            $fieldIDVal = $field.Attributes['id'].Value
+            $fieldGUIDVal = $field.Attributes['guid'].Value
+            $fieldTypeVal = $field.Attributes['type'].Value
+
+            $fieldNode = $fieldDef.GetEnumerator() | Where-Object id -EQ $fieldIDVal
+            $fieldName = $fieldNode.name
+            $fieldAlias = $fieldNode.alias
+
+            if ($fieldTypeVal -eq 1) {
+                $FieldData += [FieldData]@{
+                    'id'    = $fieldIDVal
+                    'guid'  = $fieldGUIDVal
+                    'name'  = $fieldName
+                    'alias' = $fieldAlias
+                    'value' = $field.InnerText
+                    'type'  = $fieldTypeVal
+                }
+            }
+            if ($fieldTypeVal -eq 2) {
+
+                $FieldData += [FieldData]@{
+                    'id'    = $fieldIDVal
+                    'guid'  = $fieldGUIDVal
+                    'name'  = $fieldName
+                    'alias' = $fieldAlias
+                    'value' = [int]$field.InnerText
+                    'type'  = $fieldTypeVal
+                }
+            }
+            if ($fieldTypeVal -eq 4) {
+                $valueNodes = $field.ListValues.ListValue
+                $Values = @()
+                foreach ($valueNode in $valueNodes) {
+                    $Values += $valueNode.InnerText
+                }
+                $FieldData += [FieldData]@{
+                    'id'    = $fieldIDVal
+                    'guid'  = $fieldGUIDVal
+                    'name'  = $fieldName
+                    'alias' = $fieldAlias
+                    'value' = $Values
+                    'type'  = $fieldTypeVal
+                }
+            }
+            else {
+                $FieldData += [FieldData]@{
+                    'id'    = $fieldIDVal
+                    'guid'  = $fieldGUIDVal
+                    'name'  = $fieldName
+                    'alias' = $fieldAlias
+                    'value' = $field.InnerText
+                    'type'  = $fieldTypeVal
+                }
+            }
+        }
+
+        $rec.Data += $FieldData
+        $rec.Id = $recordIDVal
+        $recData += $rec
+    }
+    $recJSON = $recData | ConvertTo-Json -Depth 100
+    return $recJSON
 }

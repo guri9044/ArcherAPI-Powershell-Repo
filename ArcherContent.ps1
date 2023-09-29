@@ -1,17 +1,3 @@
-class AResponse {
-    [object]$Value
-    [bool]$IsSuccessful
-    [object]$Exception
-    [object]$Response
-
-    AResponse($Value, $IsSuccessful, $Exception, $Response) {
-        $this.Value = $Value
-        $this.IsSuccessful = $IsSuccessful
-        $this.Exception = $Exception
-        $this.Response = $Response
-    }
-}
-
 class ArcherContent {
     $response = $null
     $sessionToken = $null
@@ -143,5 +129,19 @@ class RequestJSON {
             }
         }    
         return $this.requestJSON
+    }
+}
+
+class AResponse {
+    [object]$Value
+    [bool]$IsSuccessful
+    [object]$Exception
+    [object]$Response
+
+    AResponse($Value, $IsSuccessful, $Exception, $Response) {
+        $this.Value = $Value
+        $this.IsSuccessful = $IsSuccessful
+        $this.Exception = $Exception
+        $this.Response = $Response
     }
 }

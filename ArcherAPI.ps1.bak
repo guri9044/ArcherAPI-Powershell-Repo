@@ -75,7 +75,7 @@
         Add-Content $this.fullFileName -Value '[ERROR] ' + $logMessage
     }
 }
-class AResponse {
+﻿class AResponse {
     [string]$Value
     [bool]$IsSuccessful
     [object]$Exception
