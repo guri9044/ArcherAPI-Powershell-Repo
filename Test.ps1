@@ -31,5 +31,3 @@ $aO = [ArcherSearch]::new('http://192.168.44.10/Archer', $sessionToken)
 $ko = $aO.SearchRecordsByReport(13794, 1).Value
 Clear-Host
 Write-Host $ko
-Write-Host 'END"'
-

@@ -34,11 +34,11 @@ class ArcherSearch {
             $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $body
             $xmlResponse = [XML]$this.response
             $responseResult = $xmlResponse.Envelope.Body.SearchRecordsByReportResponse.SearchRecordsByReportResult
-            PrivateExtractRecordsfromXML($responseResult)
+            $var1 = PrivateExtractRecordsfromXML($responseResult)
 
 
 
-            $okResult = [AResponse]::new($responseResult, $True, '', $this.response)
+            $okResult = [AResponse]::new($var1, $True, '', $this.response)
             return $okResult
         }
         catch {
@@ -48,10 +48,32 @@ class ArcherSearch {
     }
 }
 
+class FieldDefinitions {
+    [int]$id = $null
+    [GUID]$guid = $null
+    [string]$name = $null
+    [string]$alias = $null
+    FieldDefinitions([int]$id, [GUID]$guid, [string]$name, [string]$alias) {
+        $this.id = $id
+        $this.alias = $alias
+        $this.guid = $guid
+        $this.name = $name
+    }
+}
+
 function PrivateExtractRecordsfromXML([string] $inputXML) {
     $xmlObject = [XML]$inputXML
     $blankJsonObject = @{}
     $jsonData = $blankJsonObject | ConvertTo-Json
     $countOfRecords = $xmlObject.Records.Attributes["count"].Value
+    $FieldDefinitions = New-Object Collections.Generic.List[FieldDefinitions]
+    
+    $FieldDefinitions = $xmlObject.Records.Metadata.FieldDefinitions
+
+    return $IDList
     Clear-Host
+}
+
+function PrivateConvertfromXML([string] $inputXML) {
+
 }
