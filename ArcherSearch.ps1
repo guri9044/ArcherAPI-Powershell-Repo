@@ -21,7 +21,30 @@ class ArcherSearch {
         $this.baseURL = $baseURL
     }
 
+    
     [AResponse] SearchRecordsByReport([object] $reportIDorGUID, [int] $pageNumber) {
+        try {
+            $requestURL = $this.baseURL + '/ws/search.asmx'
+            $headers = @{
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "Accept"                  = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+                "Content-Type"            = "text/xml"
+            }
+            $body = "<?xml version=`"1.0`" encoding=`"utf-8`"?><soap12:Envelope xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`" xmlns:xsd=`"http://www.w3.org/2001/XMLSchema`" xmlns:soap12=`"http://www.w3.org/2003/05/soap-envelope`"><soap12:Body><SearchRecordsByReport xmlns=`"http://archer-tech.com/webservices/`"><sessionToken>" + $this.sessionToken + "</sessionToken><reportIdOrGuid>" + $reportIDorGUID + "</reportIdOrGuid><pageNumber>" + $pageNumber + "</pageNumber></SearchRecordsByReport></soap12:Body></soap12:Envelope>"
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $body
+            $xmlResponse = [XML]$this.response
+            $responseResult = $xmlResponse.Envelope.Body.SearchRecordsByReportResponse.SearchRecordsByReportResult
+            $okResult = [AResponse]::new($responseResult, $True, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+
+    [AResponse] SearchRecordsByReportJSON([object] $reportIDorGUID, [object] $allLevels) {
         try {
             $requestURL = $this.baseURL + '/ws/search.asmx'
             $headers = @{
@@ -91,7 +114,7 @@ function PrivateExtractRecordsfromXML($inputRawXML) {
     }
 
     $recordsArray = $xmlObject.Records.Record
-    $recordObject = PrivateDataConvertfromXML($recordsArray, $FieldDefinitionsList)
+    $recordObject = Private_ArcherXMLToJSON($recordsArray, $FieldDefinitionsList)
     $recordJSON = $recordObject | ConvertTo-Json -Depth 100
     return $recordJSON
     Clear-Host
@@ -113,12 +136,12 @@ RelatedRecords = 23,
 Subform = 24
 #>
 
-function PrivateDataConvertfromXML($inputXML) {
+$recData = @()
+
+function Private_ArcherXMLToJSON($inputXML) {
     $data = $inputXML[0]
     $fieldDef = $inputXML[1]
-    
-    $recData = @()
-    
+
     foreach ($record in $data) {
         $FieldData = @()
         $rec = [RecordData]::new() 

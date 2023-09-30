@@ -1,6 +1,7 @@
 Import-Module .\ArcherAPI.ps1
 Import-Module .\ArcherContent.ps1
 Import-Module .\ArcherSearch.ps1
+Import-Module .\ArcherLevel.ps1
 
 Clear-Host
 
@@ -28,6 +29,8 @@ Write-Host $reqJSON
 $recordID  = $archerContent.Record_Create($reqJSON).Value #>
 
 $aO = [ArcherSearch]::new('http://192.168.44.10/Archer', $sessionToken)
-$ko = $aO.SearchRecordsByReport(13794, 1).Value
+$aL = [ArcherLevel]::new('http://192.168.44.10/Archer', $sessionToken)
+$allLevels = $aL.Level_Get()
+$ko = $aO.SearchRecordsByReportJSON(13794, $allLevels).Value
 Clear-Host
 Write-Host $ko
