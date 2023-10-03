@@ -194,6 +194,7 @@ function PrivateDataConvertfromXML($inputXML) {
         $rec.relationship = $childData
         $recData += $rec
     }
-    #$recJSON = $recData | ConvertTo-Json -Depth 100
+    $recJSON = $recData | ConvertTo-Json -Depth 100
+    $recJSON > recordJSON.txt
     return $recData
 }
