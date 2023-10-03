@@ -32,5 +32,5 @@ $aO = [ArcherSearch]::new('http://192.168.44.10/Archer', $sessionToken)
 $aL = [ArcherLevel]::new('http://192.168.44.10/Archer', $sessionToken)
 $allLevels = $aL.Level_Get()
 $ko = $aO.SearchRecordsByReportJSON(13794, $allLevels).Value
-Clear-Host
+
 Write-Host $ko
