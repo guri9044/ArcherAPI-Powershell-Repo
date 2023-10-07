@@ -54,10 +54,10 @@ $my = [PSCustomObject]@{
     $userDomain   = ""
     $sessionToken = ""
 }
-
-    
+#>
+    $baseURL = 'https://riotinto-dev.archerirm.com.au'
     $archerAPI = [ArcherAuthentication]::new($baseURL)
-    $loginResponse = $archerAPI.Login( 'IU', 'Archer@123', '700030', '')
+    $loginResponse = $archerAPI.Login( 'IU', 'Archer@123', '710074', '')
     if ($loginResponse.IsSuccessful -eq $False) {
         $logger.LogError('Authentication Unsuccessful ' + $loginResponse.Exception)
         throw 'Authentication Unsuccessful ' + $loginResponse.Exception
@@ -65,7 +65,7 @@ $my = [PSCustomObject]@{
     $sessionToken = $archerAPI.sessionToken
     $logger.LogInfo("Authentication done - $sessionToken")
     Write-Host "Authentication done - $sessionToken"
-#>
+
     #$archerContent = [ArcherContent]::new('http://192.168.44.10/Archer',$sessionToken)
     <#Clear-Host
 #get record
@@ -88,8 +88,6 @@ $aL = [ArcherLevel]::new($baseURL, $sessionToken)
 $allLevels = $aL.Level_Get()
 $ko = $aO.SearchRecordsByReportJSON(13794).Value
 #>
-    $baseURL = 'https://riotinto.archerirm.com.au'
-    $sessionToken = 'BB26B15467055A71B6C901BCED021C86'
     $aU = [ArcherUser]::new($baseURL, $sessionToken)
     #$au.User_Get()
     $csvPath = "new.csv"
