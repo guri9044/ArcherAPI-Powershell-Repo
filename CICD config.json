@@ -1,0 +1,22 @@
+{
+    "Environment": [
+        {
+            "Source": {
+                "BaseURL": "http://192.168.44.10/Archer",
+                "Username": "webapi",
+                "Password": "Archer@123",
+                "Instance": "oda",
+                "UserDomain": ""
+            }
+        },
+        {
+            "Target": {
+                "BaseURL": "http://192.168.44.10/Archer",
+                "Username": "webapi",
+                "Password": "Archer@123",
+                "Instance": "ootb",
+                "UserDomain": ""
+            }
+        }
+    ]
+}

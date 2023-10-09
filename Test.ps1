@@ -1,7 +1,10 @@
 Import-Module .\ArcherAPI.ps1
-
 Clear-Host
 try {
+
+    Write-Host " Hello Neo " -ForegroundColor Red -BackgroundColor Yellow
+    #Write-Host "Hello Neo" -NoNewline -ForegroundColor Yellow
+
     $logger = [Logger]::new()
     class User {
         [string]$ID

@@ -56,8 +56,6 @@ class ArcherAuthentication {
         }
     }
 }
-
-
 class ArcherUser {
     $response = $null
     $sessionToken = $null
@@ -140,7 +138,6 @@ class ArcherUser {
         }
     }
 }
-
 class ArcherLevel {
     $response = $null
     $sessionToken = $null
@@ -227,7 +224,6 @@ class ArcherLevel {
         }
     }
 }
-
 class ArcherContent {
     $response = $null
     $sessionToken = $null
@@ -283,7 +279,6 @@ class ArcherContent {
         }
     }
 }
-
 class ArcherSearch {
     $response = $null
     $sessionToken = $null
@@ -438,7 +433,6 @@ function PrivateExtractRecordsfromXML($inputRawXML) {
     return $recordJSON
     Clear-Host
 }
-
 function Private_ArcherXMLToJSON($inputXML) {
     $recData = @()
     $data = $inputXML[0]
@@ -541,7 +535,6 @@ function Private_ArcherXMLToJSON($inputXML) {
     #$var1 > 'all.txt'
     return $recData
 }
-
 class FieldDefinitions {
     [int]$id
     [string]$guid
@@ -554,7 +547,6 @@ class FieldDefinitions {
         $this.name = $name
     }#>
 }
-
 class RecordData {
     [int] $id
     [int] $levelId
@@ -562,7 +554,6 @@ class RecordData {
     $data = @()
     $relationship = @()
 }
-
 class FieldData {
     [int]$id
     [string]$guid
@@ -571,7 +562,6 @@ class FieldData {
     $value = @()
     [int] $type
 }
-
 class AResponse {
     [string]$Value
     [bool]$IsSuccessful
@@ -585,7 +575,6 @@ class AResponse {
         $this.Response = $Response
     }
 }
-
 class Logger {
     $fullFileName
     Logger() {
