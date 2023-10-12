@@ -1,22 +1,20 @@
 {
-    "Environment": [
+    "Environments": [
         {
-            "Source": {
-                "BaseURL": "http://192.168.44.10/Archer",
-                "Username": "webapi",
-                "Password": "Archer@123",
-                "Instance": "oda",
-                "UserDomain": ""
-            }
+            "Environment": "Source",
+            "BaseURL": "http://192.168.44.10/Archer",
+            "Username": "webapi",
+            "Password": "Archer@123",
+            "Instance": "oda",
+            "UserDomain": ""
         },
         {
-            "Target": {
-                "BaseURL": "http://192.168.44.10/Archer",
-                "Username": "webapi",
-                "Password": "Archer@123",
-                "Instance": "ootb",
-                "UserDomain": ""
-            }
+            "Environment": "Target",
+            "BaseURL": "http://104.208.113.31",
+            "Username": "webapi",
+            "Password": "Archer@123",
+            "Instance": "oob",
+            "UserDomain": ""
         }
     ]
 }

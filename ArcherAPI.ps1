@@ -1,4 +1,6 @@
 ﻿
+$Global:SourceEnv = [Environment]::new()
+$Global:TargetEnv = [Environment]::new()
 class ArcherAuthentication {
     [string] $baseURL
     [object] $response
@@ -79,7 +81,7 @@ class ArcherUser {
             if ($this.response[0].IsSuccessful -eq $False) {
                 throw $this.response.ValidationMessages.MessageKey
             }
-            $value = $this.response
+            $value = $this.response | Select-Object -ExpandProperty 'RequestedObject'
             $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
             return $okResult
         }
@@ -138,6 +140,170 @@ class ArcherUser {
         }
     }
 }
+class ArcherRole {
+    $response = $null
+    $sessionToken = $null
+    $baseURL = $null
+    ArcherRole([string] $baseURL , [string] $sessionToken) {
+        $this.sessionToken = $sessionToken
+        $this.baseURL = $baseURL
+    }
+
+    [AResponse] Role_Get() {
+        try {
+            $requestURL = $this.baseURL + '/platformapi/core/system/role'
+            $headers = @{
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "GET"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
+            if ($this.response[0].IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $value = $this.response | Select-Object -ExpandProperty 'RequestedObject'
+            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+
+    [AResponse] Role_Get([int] $Id) {
+        try {
+            $requestURL = $this.baseURL + "/platformapi/core/system/user/$Id"
+            $headers = @{
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "GET"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
+            if ($this.response.IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $value = $this.response.RequestedObject
+            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+
+    
+    [AResponse] Role_Update([string] $body) {
+        try {
+            $requestURL = $this.baseURL + '/platformapi/core/system/user'
+            $headers = @{
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "PUT"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $body 
+            if ($this.response.IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $value = $this.response.RequestedObject.Id
+            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+}
+class ArcherGroup {
+    $response = $null
+    $sessionToken = $null
+    $baseURL = $null
+    ArcherGroup([string] $baseURL , [string] $sessionToken) {
+        $this.sessionToken = $sessionToken
+        $this.baseURL = $baseURL
+    }
+
+    [AResponse] Group_Get() {
+        try {
+            $requestURL = $this.baseURL + '/platformapi/core/system/group'
+            $headers = @{
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "GET"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
+            if ($this.response[0].IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $value = $this.response | Select-Object -ExpandProperty 'RequestedObject'
+            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+
+    [AResponse] Group_Get([int] $Id) {
+        try {
+            $requestURL = $this.baseURL + "/platformapi/core/system/group/$Id"
+            $headers = @{
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "GET"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
+            if ($this.response.IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $value = $this.response.RequestedObject
+            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+
+    
+    [AResponse] Group_Update([string] $body) {
+        try {
+            $requestURL = $this.baseURL + '/platformapi/core/system/user'
+            $headers = @{
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "PUT"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $body 
+            if ($this.response.IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $value = $this.response.RequestedObject.Id
+            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+}
 class ArcherLevel {
     $response = $null
     $sessionToken = $null
@@ -158,11 +324,11 @@ class ArcherLevel {
             }
 
             $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
-            if ($this.response.IsSuccessful -eq $False) {
+            if ($this.response[0].IsSuccessful -eq $False) {
                 throw $this.response.ValidationMessages.MessageKey
             }
-            $record = $this.response.RequestedObject
-            $okResult = [AResponse]::new($record, $this.response.IsSuccessful, '', $this.response)
+            $data = $this.response | Select-Object -ExpandProperty 'RequestedObject'
+            $okResult = [AResponse]::new($data, $this.response[0].IsSuccessful, '', $this.response)
             return $okResult
         }
         catch {
@@ -176,8 +342,11 @@ class ArcherLevel {
             if ($type -eq 'level') {
                 $requestURL = $this.baseURL + '/platformapi/core/system/level/' + $id
             }
-            else {
+            elseif ($type -eq 'module') {
                 $requestURL = $this.baseURL + '/platformapi/core/system/level/module/' + $id
+            }
+            else {
+                throw "Invalid type parameter passed. Allowed values are 'level' and 'module'"
             }
             $headers = @{
                 "Content-Type"            = "application/json"
@@ -329,7 +498,88 @@ class ArcherSearch {
         }
     }
 }
+class ArcherNotification {
+    $response = $null
+    $sessionToken = $null
+    $baseURL = $null
+    ArcherNotification([string] $baseURL , [string] $sessionToken) {
+        $this.sessionToken = $sessionToken
+        $this.baseURL = $baseURL
+    }
 
+    [AResponse] Role_Get() {
+        try {
+            $requestURL = $this.baseURL + '/platformapi/core/system/role'
+            $headers = @{
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "GET"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
+            if ($this.response[0].IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $value = $this.response | Select-Object -ExpandProperty 'RequestedObject'
+            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+
+    [AResponse] Role_Get([int] $Id) {
+        try {
+            $requestURL = $this.baseURL + "/platformapi/core/system/user/$Id"
+            $headers = @{
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "GET"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
+            if ($this.response.IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $value = $this.response.RequestedObject
+            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+
+    
+    [AResponse] Role_Update([string] $body) {
+        try {
+            $requestURL = $this.baseURL + '/platformapi/core/system/user'
+            $headers = @{
+                "Content-Type"            = "application/json"
+                "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
+                "__ArcherSessionCookie__" = $this.sessionToken
+                "X-Http-Method-Override"  = "PUT"
+            }
+
+            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $body 
+            if ($this.response.IsSuccessful -eq $False) {
+                throw $this.response.ValidationMessages.MessageKey
+            }
+            $value = $this.response.RequestedObject.Id
+            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            return $okResult
+        }
+        catch {
+            $failResult = [AResponse]::new($_.Exception.Message, $this.response.IsSuccessful, $_.Exception, $this.response)
+            return $failResult
+        }
+    }
+}
 <#********** Archer Supporting Classes **********#>
 class ContentRequestJSON {
     <# Helps Create JSON for creating/updating records via Archer Content API #>
@@ -563,7 +813,7 @@ class FieldData {
     [int] $type
 }
 class AResponse {
-    [string]$Value
+    [object]$Value
     [bool]$IsSuccessful
     [object]$Exception
     [object]$Response
@@ -574,6 +824,14 @@ class AResponse {
         $this.Exception = $Exception
         $this.Response = $Response
     }
+}
+class Environment {
+    [string]$BaseURL
+    [string]$Username
+    [string]$Password
+    [string]$Instance
+    [string]$UserDomain
+    [string]$sessionToken
 }
 class Logger {
     $fullFileName
