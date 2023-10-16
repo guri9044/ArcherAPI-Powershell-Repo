@@ -507,9 +507,9 @@ class ArcherNotification {
         $this.baseURL = $baseURL
     }
 
-    [AResponse] Role_Get() {
+    [AResponse] Notification_Get() {
         try {
-            $requestURL = $this.baseURL + '/platformapi/core/system/role'
+            $requestURL = $this.baseURL + '/api/V2/internal/Notifications'
             $headers = @{
                 "Content-Type"            = "application/json"
                 "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
@@ -517,12 +517,12 @@ class ArcherNotification {
                 "X-Http-Method-Override"  = "GET"
             }
 
-            $this.response = Invoke-RestMethod $requestURL -Method 'POST' -Headers $headers -Body $null 
-            if ($this.response[0].IsSuccessful -eq $False) {
+            $this.response = Invoke-WebRequest $requestURL -Method 'POST' -Headers $headers -Body $null 
+            if ($this.response.StatusCode -ne 200) {
                 throw $this.response.ValidationMessages.MessageKey
             }
-            $value = $this.response | Select-Object -ExpandProperty 'RequestedObject'
-            $okResult = [AResponse]::new($value, $this.response.IsSuccessful, '', $this.response)
+            $value = $this.response.Content
+            $okResult = [AResponse]::new($value, $true, '', $this.response)
             return $okResult
         }
         catch {
@@ -531,9 +531,9 @@ class ArcherNotification {
         }
     }
 
-    [AResponse] Role_Get([int] $Id) {
+    [AResponse] Notification_Get([int] $Id) {
         try {
-            $requestURL = $this.baseURL + "/platformapi/core/system/user/$Id"
+            $requestURL = $this.baseURL + "/api/V2/internal/Notifications($Id)"
             $headers = @{
                 "Content-Type"            = "application/json"
                 "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""
@@ -556,9 +556,9 @@ class ArcherNotification {
     }
 
     
-    [AResponse] Role_Update([string] $body) {
+    [AResponse] Notification_Update([string] $body) {
         try {
-            $requestURL = $this.baseURL + '/platformapi/core/system/user'
+            $requestURL = $this.baseURL + '/api/V2/internal/Notifications'
             $headers = @{
                 "Content-Type"            = "application/json"
                 "Authorization"           = "Archer session-id=`"" + $this.sessionToken + "`""

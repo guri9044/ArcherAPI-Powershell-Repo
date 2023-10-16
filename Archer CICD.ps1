@@ -28,10 +28,10 @@ function DownloadRoleDetails($my) {
     $levelAPI = [ArcherLevel]::new($my.BaseURL, $sessionToken)
     $levelByModuleResponse = $levelAPI.Level_Get();
     if ($levelByModuleResponse.IsSuccessful -eq $False) {
-        throw 'Unable to download Application/Level details' + $loginResponse.Exception
+        throw 'Unable to download Role details' + $loginResponse.Exception
     }
     $env = $my.Environment
-    $levelByModuleResponse.Value | Export-Csv -Path "Downloads\$env Applications.csv" -NoTypeInformat
+    $levelByModuleResponse.Value | Export-Csv -Path "Downloads\$env Roles.csv" -NoTypeInformat
 }
 function DownloadGroupnDetails($my) {
     $archerAPI = [ArcherAuthentication]::new($my.BaseURL)
@@ -45,10 +45,10 @@ function DownloadGroupnDetails($my) {
     $levelAPI = [ArcherLevel]::new($my.BaseURL, $sessionToken)
     $levelByModuleResponse = $levelAPI.Level_Get();
     if ($levelByModuleResponse.IsSuccessful -eq $False) {
-        throw 'Unable to download Application/Level details' + $loginResponse.Exception
+        throw 'Unable to download Group details' + $loginResponse.Exception
     }
     $env = $my.Environment
-    $levelByModuleResponse.Value | Export-Csv -Path "Downloads\$env Applications.csv" -NoTypeInformat
+    $levelByModuleResponse.Value | Export-Csv -Path "Downloads\$env Groups.csv" -NoTypeInformat
     Write-Host "Please choose option :" "1. Source" "2. Target"
 }
 function DownloadNotificationDetails($my) {
@@ -60,14 +60,15 @@ function DownloadNotificationDetails($my) {
     $sessionToken = $archerAPI.sessionToken
     Write-Host "Authentication done - $sessionToken"
 
-    $levelAPI = [ArcherLevel]::new($my.BaseURL, $sessionToken)
-    $levelByModuleResponse = $levelAPI.Level_Get();
-    if ($levelByModuleResponse.IsSuccessful -eq $False) {
-        throw 'Unable to download Application/Level details' + $loginResponse.Exception
+    $notificationAPI = [ArcherNotification]::new($my.BaseURL, $sessionToken)
+    $notificationResponse = $notificationAPI.Notification_Get()
+    if ($notificationResponse.IsSuccessful -eq $False) {
+        throw 'Unable to download Notification details' + $loginResponse.Exception
     }
     $env = $my.Environment
-    $levelByModuleResponse.Value | Export-Csv -Path "Downloads\$env Applications.csv" -NoTypeInformat
-    Write-Host "Please choose option :" "1. Source" "2. Target"
+    $data = $notificationResponse.Value | ConvertFrom-Json
+    $data = $data.value
+    $data | Export-Csv -Path "Downloads\$env Notifications.csv" -NoTypeInformat
 }
 
 $config
@@ -86,9 +87,9 @@ try {
         throw "Unable to load configuration file"
     }
 
-    Write-Host "Select Option :" "1. Download Application Details" "2. Download Role Details" "3. Download Group Details" "4. Download Notification Details" "5. Migrate Changes to another environment"
+    Write-Host "Select Option :`n1. Download Application Details`n2. Download Role Details`n3. Download Group Details`n4. Download Notification Details`n5. Migrate Changes to another environment"
     $option = Read-Host 
-    Write-Host "Select Environment :" "1. Source" "2. Target"
+    Write-Host "Select Environment :`n1. Source`n2. Target"
     $envOption = Read-Host
     switch ($option) {
         1 {

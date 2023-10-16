@@ -10,10 +10,10 @@
         },
         {
             "Environment": "Target",
-            "BaseURL": "http://104.208.113.31",
+            "BaseURL": "http://192.168.44.10/Archer",
             "Username": "webapi",
             "Password": "Archer@123",
-            "Instance": "oob",
+            "Instance": "ootb",
             "UserDomain": ""
         }
     ]
